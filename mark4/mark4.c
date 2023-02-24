@@ -16,6 +16,15 @@ int isCapital(char s) {
 	return 0;
 }
 
+int isLower(char s) {
+	if (s == 'q' || s == 'w' || s == 'e' || s == 'r' || s == 't' || s == 'y' || s == 'u' || s == 'i' || s == 'o'
+	|| s == 'p' || s == 'a' || s == 'd' || s == 'f' || s == 'g' || s == 'h' || s == 'k' || s == 'l' || s == 'z'
+	|| s == 'x' || s == 'c' || s == 'v' || s == 'b' || s == 'n' || s == 'm' || s == 's' || s == 'j') {
+		return 1;
+	}
+	return 0;
+}
+
 int main(int argc, char *argv[]) {
 	int fd_read_write; // для чтения из файла argv[1] и записи в argv[2]
 	size_t real_string_size = 0; // чтобы понимать какой актуальный размер, т.к. строку мы немного меняем по заданию
@@ -64,20 +73,32 @@ int main(int argc, char *argv[]) {
 			printf("child: Can\'t close reading side of pipe\n"); exit(-1);
 		}
 		// процесс 2 обрабатывает строку
-		for (int i = 1; i < sizeof(buffer2); ++i) {
-			if (isCapital(buffer2[i])) {
+		for (int i = 0; i < sizeof(buffer2); ++i) {
+			if (buffer2[i] == '\0') {
+				real_string_size = i;
+				break;
+			}
+			if (!isLower(buffer2[i]) && !isCapital(buffer2[i])) {
+				for (int j = i; j < sizeof(buffer2) - 1; ++j) {
+					buffer2[j] = buffer2[j + 1];
+				}
+				--i;
+			} else if (isCapital(buffer2[i])) {
+				while (isLower(buffer2[i + 1])) {
+					++i;
+				}
+				++i;
 				for (int j = sizeof(buffer2) - 1; j > i; --j) {
 					buffer2[j] = buffer2[j - 1];
 				}
 				buffer2[i] = ' ';
-				++i;
+			} else {
+				for (int j = i; j < sizeof(buffer2) - 1; ++j) {
+					buffer2[j] = buffer2[j + 1];
+				}
+				--i;
 			}
-		}
-		for (int i = 0; i < sizeof(buffer2); ++i) {
-			if (buffer2[i] == '\0') {
-				break;
-			}
-			real_string_size++;
+			printf("%s", buffer2);
 		}
 		
 		int    fd23[2], result23; // для передачи от процесса 2 к процессу 3
