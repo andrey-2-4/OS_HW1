@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
 				}
 				--i;
 			}
-			printf("%s", buffer2);
+			// printf("%s", buffer2); проверка того, как работает обработка
 		}
 		
 		int    fd23[2], result23; // для передачи от процесса 2 к процессу 3
@@ -107,14 +107,14 @@ int main(int argc, char *argv[]) {
 			printf("Can\'t open pipe\n");
 			exit(-1);
 		}
-		// пытаемся создать процесс 2
+		// пытаемся создать процесс 3
 		result23 = fork();
-		if(result23 < 0) { // если не удалось создать ппроцесс 3
+		if(result23 < 0) { // если не удалось создать процесс 3
 	 		printf("Can\'t fork child\n");
 	 		exit(-1);
 		} else if (result23 > 0) { /*процесс 2*/
 			// процесс 2 пишет в канал
-			if(close(fd23[0]) < 0){ // закрываем чтение, т.к. процесс 1 только пишет (канал 2 - 3)
+			if(close(fd23[0]) < 0){ // закрываем чтение, т.к. процесс 2 только пишет (канал 2 - 3)
 	  			printf("parent: Can\'t close reading side of pipe\n"); exit(-1);
 			}
 			write(fd23[1], buffer2, MAX_BUFFER_SIZE);
@@ -129,11 +129,11 @@ int main(int argc, char *argv[]) {
 				printf("child: Can\'t close writing side of pipe\n"); exit(-1);
 			}
 			read(fd23[0], buffer3, MAX_BUFFER_SIZE);
-			if(close(fd23[0]) < 0){ // закончили читать, закрываем (канал 1 - 2)
+			if(close(fd23[0]) < 0){ // закончили читать, закрываем (канал 2 - 3)
 				printf("child: Can\'t close reading side of pipe\n"); exit(-1);
 			}
 			// процесс 3 пишет в argv[2]
-			if ((fd_read_write = open(argv[2], O_WRONLY | O_CREAT, 0666)) < 0) {
+			if ((fd_read_write = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
 				printf("coudlnt open the file");
 				exit(-1);
 			}
